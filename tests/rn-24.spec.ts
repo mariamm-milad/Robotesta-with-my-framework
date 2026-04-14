@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('RN-24', () => {
   test('Successful login with valid email and password redirects to dashboard', { tag: ['@functional', '@critical', '@login'] }, async ({ page }) => {
     // Navigate to the login page
-    await page.goto('/');
+    await page.goto('/login');
 
     // Wait for login form to be visible
     const emailField = page.locator('input[type="email"], input[name="email"], #email');
