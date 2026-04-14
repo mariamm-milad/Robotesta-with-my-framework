@@ -1,31 +1,25 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('RN-24', () => {
-  test('Successful login with valid email and password redirects to dashboard', { tag: ['@functional', '@critical', '@login'] }, async ({ page }) => {
-    // Navigate to the login page
-    await page.goto('/login');
+  test('Verify successful login with registered email and correct password redirects to dashboard', { tag: ['@functional', '@critical', '@login'] }, async ({ page }) => {
+    const loginPage = new LoginPage(page);
 
-    // Wait for login form to be visible
-    const emailField = page.locator('input[type="email"], input[name="email"], #email');
-    const passwordField = page.locator('input[type="password"], input[name="password"], #password');
-    const loginButton = page.getByRole('button', { name: /login|sign in/i });
+    // Navigate to login page
+    await loginPage.goto();
 
-    await emailField.waitFor({ state: 'visible' });
+    // Enter registered email in the Email field
+    await page.fill('[data-testid="email"], input[type="email"], #email', process.env.TEST_USER_EMAIL);
 
-    // Enter valid credentials
-    await emailField.fill(process.env.TEST_USER_EMAIL!);
-    await passwordField.fill(process.env.TEST_USER_PASSWORD!);
+    // Enter correct password in the Password field
+    await page.fill('[data-testid="password"], input[type="password"], #password', process.env.TEST_USER_PASSWORD);
 
-    // Click login button
-    await loginButton.click();
+    // Click on the Submit button
+    await page.click('[data-testid="submit"], button[type="submit"], input[type="submit"]');
 
-    // Verify successful redirect to dashboard
+    // Verify user is redirected to the dashboard landing page
     await page.waitForURL(/\/dashboard/i);
 
-    // Additional verification that we're on the dashboard
+    // Additional assertion to confirm we're on the dashboard
     await expect(page).toHaveURL(/\/dashboard/i);
-
-    // Verify dashboard elements are visible to confirm successful login
-    // TODO: Add specific dashboard element verification once UI is stable
   });
 });
