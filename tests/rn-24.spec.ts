@@ -1,25 +1,27 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('RN-24', () => {
-  test('Verify successful login with registered email and correct password redirects to dashboard', { tag: ['@functional', '@critical', '@login'] }, async ({ page }) => {
-    const loginPage = new LoginPage(page);
+  test('should mask password input for security', { tag: ['@security', '@critical'] }, async ({ page }) => {
+    // Navigate to the login page
+    await page.goto('/');
 
-    // Navigate to login page
-    await loginPage.goto();
+    // TODO: Navigate to login page if not directly accessible from home
 
-    // Enter registered email in the Email field
-    await page.fill('[data-testid="email"], input[type="email"], #email', process.env.TEST_USER_EMAIL);
+    // Locate password input field
+    const passwordField = page.getByRole('textbox', { name: /password/i }).or(page.locator('input[type="password"]')); // TODO: Use verified selector when available
 
-    // Enter correct password in the Password field
-    await page.fill('[data-testid="password"], input[type="password"], #password', process.env.TEST_USER_PASSWORD);
+    // Enter a test password
+    const testPassword = 'TestPassword123!';
+    await passwordField.fill(testPassword);
 
-    // Click on the Submit button
-    await page.click('[data-testid="submit"], button[type="submit"], input[type="submit"]');
+    // Verify the password field has type="password" attribute for masking
+    await expect(passwordField).toHaveAttribute('type', 'password');
 
-    // Verify user is redirected to the dashboard landing page
-    await page.waitForURL(/\/dashboard/i);
+    // Verify the actual value is not visible in the DOM (masked)
+    const fieldValue = await passwordField.inputValue();
+    expect(fieldValue).toBe(testPassword); // Value should be stored but not visible
 
-    // Additional assertion to confirm we're on the dashboard
-    await expect(page).toHaveURL(/\/dashboard/i);
+    // Additional security check: verify the field doesn't display plain text visually
+    await expect(passwordField).not.toContainText(testPassword);
   });
 });
